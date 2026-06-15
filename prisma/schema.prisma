@@ -1,0 +1,72 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"] // Enable support for DB extensions like pgvector
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [vector] // Register the pgvector extension natively in the Postgres schema
+}
+
+// 1. Company Information Model
+model Company {
+  id            String   @id @default(uuid())
+  name          String
+  description   String   @db.Text
+  services      String   @db.Text
+  contactInfo   String   @db.Text @map("contact_info")
+  address       String   @db.Text
+  businessHours String   @db.Text @map("business_hours")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("company")
+}
+
+// 2. Documents Metadata Model
+model Document {
+  id        String          @id @default(uuid())
+  title     String
+  filePath  String?         @map("file_path")
+  fileType  String          @map("file_type") // 'pdf' | 'txt' | 'md'
+  createdAt DateTime        @default(now()) @map("created_at")
+  chunks    DocumentChunk[]
+
+  @@map("documents")
+}
+
+// 3. Document Chunks Model (Houses vector embeddings)
+model DocumentChunk {
+  id         String   @id @default(uuid())
+  documentId String   @map("document_id")
+  content    String   @db.Text
+  
+  // Declaring pgvector field with 768 dimensions as unsupported natively by Prisma DSL.
+  // We will insert and query this column using raw SQL.
+  embedding  Unsupported("vector(768)")?
+
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@map("document_chunks")
+}
+
+// 4. FAQ Model
+model FAQ {
+  id        String   @id @default(uuid())
+  question  String   @db.Text
+  answer    String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("faqs")
+}
+
+// 5. Chat History Model (For future-proofing sessions if needed)
+model ChatMessage {
+  id        String   @id @default(uuid())
+  sessionId String   @map("session_id")
+  role      String   // 'user' | 'assistant'
+  message   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("chat_messages")
+}
