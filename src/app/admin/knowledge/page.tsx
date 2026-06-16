@@ -44,7 +44,7 @@ export default function KnowledgePage() {
   };
 
   // Handle document submission
-  const handleUploadSubmit = async (e: React.FormEvent) => {
+  const handleUploadSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!file) return;
 
@@ -76,7 +76,7 @@ export default function KnowledgePage() {
       fetchDocuments();
     } catch (err: unknown) {
       console.error(err);
-      setMessage({ type: "error", text: err instanceof Error ? err.message : "An error occurred during file upload." });
+      setMessage({ type: "error", text: (err as Error).message || "An error occurred during file upload." });
     } finally {
       setUploading(false);
     }
