@@ -4,7 +4,7 @@ import React, { useState } from "react";
 
 interface ChunkResult {
   id: string;
-  documentTitle: string;
+  title: string;
   content: string;
   similarity: number;
 }
@@ -12,6 +12,7 @@ interface ChunkResult {
 export default function TestChatPage() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [aiAnswer, setAiAnswer] = useState("");
   const [chunks, setChunks] = useState<ChunkResult[]>([]);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -22,6 +23,7 @@ export default function TestChatPage() {
     setLoading(true);
     setMessage(null);
     setChunks([]);
+    setAiAnswer("");
 
     try {
       const res = await fetch("/api/admin/test-search", {
@@ -36,9 +38,11 @@ export default function TestChatPage() {
         throw new Error(data.error || "Failed to query vector database");
       }
 
+      setAiAnswer(data.answer);
       setChunks(data.chunks);
+
       if (data.chunks.length === 0) {
-        setMessage({ type: "success", text: "Search executed. No document chunks passed the 50% similarity threshold." });
+        setMessage({ type: "success", text: "Query processed. No relevant knowledge document chunks passed the 45% threshold." });
       }
     } catch (err: unknown) {
       console.error(err);
@@ -85,6 +89,16 @@ export default function TestChatPage() {
         </button>
       </form>
 
+      {/* AI Grounded Response Section */}
+      {aiAnswer && (
+        <div className="mb-8 bg-indigo-50/50 border border-indigo-100 rounded-xl p-6 shadow-sm">
+          <h2 className="text-xs font-bold uppercase text-indigo-700 tracking-wider mb-2">Final AI Response</h2>
+          <div className="text-sm text-slate-800 leading-relaxed font-medium whitespace-pre-wrap">
+            {aiAnswer}
+          </div>
+        </div>
+      )}
+
       {/* Retrieved Chunks Display */}
       {chunks.length > 0 && (
         <div className="space-y-6">
@@ -98,7 +112,7 @@ export default function TestChatPage() {
                       {idx + 1}
                     </span>
                     <span className="text-xs font-semibold text-slate-500 truncate max-w-xs">
-                      Source: {chunk.documentTitle}
+                      Source: {chunk.title}
                     </span>
                   </div>
                   <span

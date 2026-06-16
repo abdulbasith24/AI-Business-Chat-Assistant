@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { searchSimilarity } from "@/lib/rag";
+import { generateGroundedAnswer } from "@/lib/gemini";
 
 export async function POST(request: Request) {
   try {
@@ -9,10 +9,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Query parameter is required" }, { status: 400 });
     }
 
-    // Run the similarity search query
-    const matchedChunks = await searchSimilarity(query);
+    // Call our RAG grounded generator
+    const ragResult = await generateGroundedAnswer(query);
 
-    return NextResponse.json({ chunks: matchedChunks });
+    return NextResponse.json({
+      answer: ragResult.answer,
+      chunks: ragResult.sources, // This now contains full id, title, content, and similarity
+    });
   } catch (error) {
     console.error("Failed to run test vector search:", error);
     return NextResponse.json(
