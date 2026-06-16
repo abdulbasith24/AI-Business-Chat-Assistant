@@ -87,7 +87,7 @@ export default function KnowledgePage() {
     if (!confirm(`Are you sure you want to delete "${title}"?`)) return;
 
     try {
-      const response  = await fetch(`/api/api/admin/documents/${id}`, {
+      const response  = await fetch(`/api/admin/documents/${id}`, {
         // Wait, note the URL! Next.js routing should call the corrected peer api folder
         method: "DELETE",
       });

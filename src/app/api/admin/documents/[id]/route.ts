@@ -26,9 +26,9 @@ export async function DELETE(
     if (document.filePath) {
       try {
         await unlink(document.filePath);
-      } catch (fileError: any) {
+      } catch (fileError: unknown) {
         // If the file was already deleted or moved on disk, log it but don't crash
-        console.warn(`File deletion warning: ${fileError.message}`);
+        console.warn(`File deletion warning: ${ (fileError as Error).message }`);
       }
     }
 
