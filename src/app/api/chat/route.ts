@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { searchSimilarity } from "@/lib/rag";
 import { db } from "@/lib/db";
 import { ai } from "@/lib/gemini";
+import { matchFAQ } from "@/lib/faq";
 
 // Force edge or serverless runtime to support streaming connections
 export const runtime = "nodejs";
@@ -17,6 +18,30 @@ export async function POST(request: Request) {
     // Get the latest user query from the message thread
     const latestMessage = messages[messages.length - 1];
     const userQuery = latestMessage.content;
+
+    // ----------------------------------------------------
+    // INTERCEPTOR: Check FAQ matches first to bypass APIs
+    // ----------------------------------------------------
+    const faqAnswer = await matchFAQ(userQuery);
+    if (faqAnswer) {
+      // Pipe the instant answer directly through our stream loader
+      const stream = new ReadableStream({
+        start(controller) {
+          const encoder = new TextEncoder();
+          controller.enqueue(encoder.encode(faqAnswer));
+          controller.close();
+        },
+      });
+
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          "Cache-Control": "no-cache",
+        },
+      });
+    }
+    // ----------------------------------------------------
+    // End of Interceptor
 
     // 1. Fetch General Company Information
     const company = await db.company.findFirst();
