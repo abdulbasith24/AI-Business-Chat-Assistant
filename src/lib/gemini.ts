@@ -17,7 +17,12 @@ export const ai = new GoogleGenAI({
  */
 export async function generateGroundedAnswer(userQuery: string): Promise<{
   answer: string;
-  sources: Array<{ title: string; similarity: number }>;
+  sources: Array<{
+    id: string;
+    title: string;
+    content: string;
+    similarity: number;
+  }>;
 }> {
   try {
     // 1. Fetch Company Information (to supplement document chunks)
@@ -75,12 +80,6 @@ export async function generateGroundedAnswer(userQuery: string): Promise<{
     });
 
     const aiAnswer = response.text || "Sorry, I am unable to generate a response at this moment.";
-
-    // Map source files to show in the UI
-    const sources = matchedChunks.map((c) => ({
-      title: c.documentTitle,
-      similarity: c.similarity,
-    }));
 
     return {
       answer: aiAnswer,
