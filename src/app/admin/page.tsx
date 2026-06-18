@@ -1,177 +1,127 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { CompanySchema, type CompanyInput } from "@/lib/validation";
+import Link from "next/link";
 
-export default function CompanySettingsPage() {
+interface Stats {
+  companyConfigured: boolean;
+  companyName: string;
+  documentsCount: number;
+  chunksCount: number;
+  faqsCount: number;
+  dbStatus: "Healthy" | "Disconnected";
+}
+
+export default function AdminDashboardOverview() {
+  const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<CompanyInput>({
-    resolver: zodResolver(CompanySchema),
-  });
-
-  // Load existing details on component render
   useEffect(() => {
-    async function fetchCompanyDetails() {
+    async function fetchStats() {
       try {
-        const response = await fetch("/api/admin/company");
-        if (response.ok) {
-          const data = await response.json();
-          reset(data);
+        const res = await fetch("/api/admin/stats");
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data);
         }
-      } catch (error) {
-        console.error("Failed to load company details", error);
-        setMessage({ type: "error", text: "Failed to connect to database API" });
+      } catch (err) {
+        console.error(err);
       } finally {
         setLoading(false);
       }
     }
-    fetchCompanyDetails();
-  }, [reset]);
-
-  const onSubmit = async (data: CompanyInput) => {
-    setIsSaving(true);
-    setMessage(null);
-    try {
-      const response = await fetch("/api/admin/company", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save data");
-      }
-
-      setMessage({ type: "success", text: "Company settings updated successfully." });
-    } catch (error) {
-      console.error(error);
-      setMessage({ type: "error", text: "Something went wrong while saving changes." });
-    } finally {
-      setIsSaving(false);
-    }
-  };
+    fetchStats();
+  }, []);
 
   if (loading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <p className="text-slate-500 animate-pulse">Loading company settings...</p>
+        <p className="text-slate-500 animate-pulse">Assembling system overview...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-5xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Company Profile</h1>
-        <p className="text-sm text-slate-500">Configure core metadata for grounding chatbot responses.</p>
+        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Overview Dashboard</h1>
+        <p className="text-sm text-slate-500">Live monitoring metrics for your grounded business chatbot instance.</p>
       </div>
 
-      {message && (
-        <div
-          className={`mb-6 p-4 rounded-lg border text-sm ${
-            message.type === "success"
-              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-              : "bg-rose-50 border-rose-200 text-rose-800"
-          }`}
-        >
-          {message.text}
+      {/* Database Connection Banner */}
+      <div className="mb-8 flex items-center justify-between rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex items-center gap-4">
+          <span className={`flex h-4 w-4 rounded-full animate-pulse ${
+            stats?.dbStatus === "Healthy" ? "bg-emerald-500" : "bg-rose-500"
+          }`}></span>
+          <div>
+            <h3 className="text-sm font-bold text-slate-900">Database Connection Status</h3>
+            <p className="text-xs text-slate-500 font-medium">Synced with Neon Serverless Cloud Host</p>
+          </div>
         </div>
-      )}
+        <span className="text-xs font-semibold uppercase text-slate-400">
+          {stats?.dbStatus === "Healthy" ? "ACTIVE" : "OFFLINE"}
+        </span>
+      </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-8 rounded-xl border border-slate-200 shadow-sm">
+      {/* Statistics Grid */}
+      <div className="grid gap-6 md:grid-cols-3 mb-8">
         
-        {/* Name */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1">Company Name</label>
-          <input
-            type="text"
-            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            placeholder="e.g., Acme Consulting Services"
-            {...register("name")}
-          />
-          {errors.name && <p className="mt-1 text-xs text-rose-600">{errors.name.message}</p>}
+        {/* Company Settings card */}
+        <div className="bg-white border border-slate-200 p-6 rounded-xl shadow-sm">
+          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Company Status</h4>
+          <p className="text-xl font-extrabold text-slate-900 truncate">
+            {stats?.companyConfigured ? stats.companyName : "Unconfigured"}
+          </p>
+          <p className="text-xs text-slate-500 mt-2 font-medium">
+            {stats?.companyConfigured ? "Profile loaded successfully" : "Create profile to ground answers"}
+          </p>
+          <Link href="/admin/company" className="inline-block text-xs font-bold text-indigo-600 hover:text-indigo-800 mt-4">
+            Manage Profile →
+          </Link>
         </div>
 
-        {/* Description */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1">About Company (Description)</label>
-          <textarea
-            rows={4}
-            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            placeholder="Introduce what your business does..."
-            {...register("description")}
-          />
-          {errors.description && <p className="mt-1 text-xs text-rose-600">{errors.description.message}</p>}
+        {/* Knowledge Base stats */}
+        <div className="bg-white border border-slate-200 p-6 rounded-xl shadow-sm">
+          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Knowledge Inventory</h4>
+          <p className="text-3xl font-extrabold text-slate-900">
+            {stats?.documentsCount} <span className="text-sm font-semibold text-slate-400">Files</span>
+          </p>
+          <p className="text-xs text-slate-500 mt-2 font-medium">
+            Representing <span className="font-bold text-indigo-600">{stats?.chunksCount}</span> searchable vector chunks
+          </p>
+          <Link href="/admin/knowledge" className="inline-block text-xs font-bold text-indigo-600 hover:text-indigo-800 mt-4">
+            Manage Documents →
+          </Link>
         </div>
 
-        {/* Services */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1">Core Services</label>
-          <textarea
-            rows={3}
-            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            placeholder="List your products, packages, or services..."
-            {...register("services")}
-          />
-          {errors.services && <p className="mt-1 text-xs text-rose-600">{errors.services.message}</p>}
+        {/* FAQ counters */}
+        <div className="bg-white border border-slate-200 p-6 rounded-xl shadow-sm">
+          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Preconfigured FAQs</h4>
+          <p className="text-3xl font-extrabold text-slate-900">
+            {stats?.faqsCount} <span className="text-sm font-semibold text-slate-400">Entries</span>
+          </p>
+          <p className="text-xs text-slate-500 mt-2 font-medium">
+            Bypassing AI APIs instantly for fast responses
+          </p>
+          <Link href="/admin/faqs" className="inline-block text-xs font-bold text-indigo-600 hover:text-indigo-800 mt-4">
+            Manage FAQs →
+          </Link>
         </div>
 
-        {/* Contact Info */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1">Contact Information</label>
-          <input
-            type="text"
-            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            placeholder="e.g., support@acme.com, (555) 019-2834"
-            {...register("contactInfo")}
-          />
-          {errors.contactInfo && <p className="mt-1 text-xs text-rose-600">{errors.contactInfo.message}</p>}
-        </div>
+      </div>
 
-        {/* Address */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1">Office Address</label>
-          <input
-            type="text"
-            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            placeholder="e.g., 123 Enterprise Suite, San Francisco, CA"
-            {...register("address")}
-          />
-          {errors.address && <p className="mt-1 text-xs text-rose-600">{errors.address.message}</p>}
-        </div>
+      {/* Guide Card */}
+      <div className="bg-gradient-to-r from-indigo-50 to-indigo-100/50 border border-indigo-100 rounded-xl p-8 shadow-sm">
+        <h3 className="text-md font-bold text-indigo-900 mb-2">Getting Started with Grounded RAG</h3>
+        <p className="text-sm text-indigo-800/80 leading-relaxed max-w-2xl mb-4">
+          To provide highly accurate answers to visitors, ensure you configure your **Company Profile** first. Then upload relevant documents (such as pricing packages, product specs, or terms of service) inside the **Knowledge Base** tab to generate matching vector coordinates.
+        </p>
+        <Link href="/admin/test-chat" className="inline-block rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 shadow-sm transition">
+          Test Grounded Queries →
+        </Link>
+      </div>
 
-        {/* Business Hours */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1">Business Hours</label>
-          <input
-            type="text"
-            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            placeholder="e.g., Monday - Friday: 9:00 AM - 5:00 PM EST"
-            {...register("businessHours")}
-          />
-          {errors.businessHours && <p className="mt-1 text-xs text-rose-600">{errors.businessHours.message}</p>}
-        </div>
-
-        <div className="pt-4 border-t border-slate-100 flex justify-end">
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-indigo-400"
-          >
-            {isSaving ? "Saving..." : "Save Settings"}
-          </button>
-        </div>
-      </form>
     </div>
   );
 }

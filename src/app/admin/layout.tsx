@@ -19,7 +19,13 @@ export default function AdminLayout({
         <nav className="space-y-1">
           <Link
             href="/admin"
-            className="flex items-center rounded-lg bg-indigo-50 px-4 py-2.5 text-sm font-medium text-indigo-700"
+            className="flex items-center rounded-lg px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+          >
+            Overview Dashboard
+          </Link>
+          <Link
+            href="/admin/company"
+            className="flex items-center rounded-lg px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900"
           >
             Company Profile
           </Link>
@@ -39,7 +45,7 @@ export default function AdminLayout({
             href="/admin/test-chat"
             className="flex items-center rounded-lg px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900"
           >
-            Test Chat
+            Test Chat (RAG)
           </Link>
         </nav>
       </aside>

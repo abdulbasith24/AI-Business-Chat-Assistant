@@ -24,7 +24,7 @@ export default function FAQManagementPage() {
         const data = await res.json();
         setFaqs(data);
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
     } finally {
       setLoading(false);
@@ -58,9 +58,9 @@ export default function FAQManagementPage() {
       setQuestion("");
       setAnswer("");
       fetchFaqs();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setMessage({ type: "error", text: err.message || "Something went wrong." });
+      setMessage({ type: "error", text: (err as Error).message || "Something went wrong." });
     } finally {
       setIsSaving(false);
     }
@@ -80,9 +80,9 @@ export default function FAQManagementPage() {
 
       setFaqs((prev) => prev.filter((item) => item.id !== id));
       setMessage({ type: "success", text: "FAQ removed successfully." });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setMessage({ type: "error", text: err.message || "Error deleting FAQ." });
+      setMessage({ type: "error", text: (err as Error).message || "Error deleting FAQ." });
     }
   };
 
