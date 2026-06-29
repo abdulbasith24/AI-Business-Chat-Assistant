@@ -1,7 +1,3 @@
-// app/admin/layout.tsx  — Drop-in replacement for the admin layout shell
-// Provides: collapsible sidebar (desktop), mobile drawer, top bar
-// Zero functional changes — purely structural/visual
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -128,7 +124,7 @@ function SidebarContent({
           <p className="text-sm font-semibold text-slate-900 leading-none truncate">
             Assistant Admin
           </p>
-          <p className="text-[11px] text-slate-500 mt-0.5 leading-none">
+          <p className="text-xs text-slate-500 mt-0.5 leading-none">
             Single-Company Panel
           </p>
         </div>
@@ -136,7 +132,7 @@ function SidebarContent({
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-0.5" aria-label="Admin navigation">
-        <p className="px-3 pb-2 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+        <p className="px-3 pb-2 text-xs font-medium text-slate-400 uppercase tracking-wide">
           Navigation
         </p>
         {NAV_ITEMS.map(({ href, label, Icon }) => {
@@ -184,12 +180,12 @@ function SidebarContent({
         </a>
         <div className="mt-3 px-3">
           <div className="flex items-center gap-2.5 py-2">
-            <div className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-600 flex-shrink-0">
+            <div className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 flex-shrink-0">
               A
             </div>
             <div className="min-w-0">
               <p className="text-xs font-semibold text-slate-700 leading-none">Admin</p>
-              <p className="text-[10px] text-slate-400 mt-0.5 leading-none">Administrator</p>
+              <p className="text-xs text-slate-400 mt-0.5 leading-none">Administrator</p>
             </div>
           </div>
         </div>

@@ -9,6 +9,31 @@ interface Document {
   createdAt: string;
 }
 
+// ── Icons ─────────────────────────────────────────────────────────────────────
+
+function DocumentIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+    </svg>
+  );
+}
+
+function UploadIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" y1="3" x2="12" y2="15" />
+    </svg>
+  );
+}
+
+// ── Main Page Component ───────────────────────────────────────────────────────
+
 export default function KnowledgePage() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +69,7 @@ export default function KnowledgePage() {
   };
 
   // Handle document submission
-  const handleUploadSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+  const handleUploadSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!file) return;
 
@@ -88,7 +113,6 @@ export default function KnowledgePage() {
 
     try {
       const response  = await fetch(`/api/admin/documents/${id}`, {
-        // Wait, note the URL! Next.js routing should call the corrected peer api folder
         method: "DELETE",
       });
       
@@ -106,56 +130,78 @@ export default function KnowledgePage() {
   };
 
   return (
-    <div className="max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Knowledge Base</h1>
-        <p className="text-sm text-slate-500">Upload and manage PDF, TXT, or MD documents containing company context.</p>
+    <div className="max-w-4xl space-y-8">
+      
+      {/* ── Page Heading ─────────────────────────────────────────────────── */}
+      <div>
+        <h1 className="text-xl font-semibold text-slate-900 tracking-tight">
+          Knowledge Base
+        </h1>
+        <p className="mt-1 text-sm text-slate-500">
+          Upload and manage PDF, TXT, or MD documents containing company context.
+        </p>
       </div>
 
+      {/* ── Alert Messages ────────────────────────────────────────────────── */}
       {message && (
         <div
-          className={`mb-6 p-4 rounded-lg border text-sm ${
+          className={`flex items-center gap-2.5 p-4 rounded-xl border text-sm ${
             message.type === "success"
               ? "bg-emerald-50 border-emerald-200 text-emerald-800"
               : "bg-rose-50 border-rose-200 text-rose-800"
           }`}
         >
-          {message.text}
+          <span
+            className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+              message.type === "success" ? "bg-emerald-500" : "bg-rose-500"
+            }`}
+            aria-hidden="true"
+          />
+          <p>{message.text}</p>
         </div>
       )}
 
-      {/* Upload Zone */}
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-8">
-        <h2 className="text-sm font-semibold text-slate-800 mb-4">Upload New Document</h2>
-        <form onSubmit={handleUploadSubmit} className="flex flex-col md:flex-row md:items-center gap-4">
+      {/* ── Upload Zone Card ──────────────────────────────────────────────── */}
+      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <h2 className="text-base font-semibold text-slate-900 mb-4 flex items-center gap-2">
+          <UploadIcon className="w-4 h-4 text-slate-500" />
+          Upload New Document
+        </h2>
+        
+        <form onSubmit={handleUploadSubmit} className="flex flex-col md:flex-row md:items-start gap-4">
           <div className="flex-1">
             <input
               id="file-input"
               type="file"
               accept=".pdf,.txt,.md"
               onChange={handleFileChange}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm transition-all duration-150 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
             />
-            <p className="text-[11px] text-slate-400 mt-1">Accepts PDF, TXT, or MD (Max size 10MB)</p>
+            <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+              Accepts PDF, TXT, or MD (Max size 10MB)
+            </p>
           </div>
+          
           <button
             type="submit"
             disabled={uploading || !file}
-            className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-indigo-100 disabled:text-indigo-400 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
           >
             {uploading ? "Uploading..." : "Upload File"}
           </button>
         </form>
       </div>
 
-      {/* Document Inventory List */}
+      {/* ── Document Inventory Card ────────────────────────────────────────── */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-slate-100">
-          <h2 className="text-sm font-semibold text-slate-800">Uploaded Documents</h2>
+          <h2 className="text-base font-semibold text-slate-900">
+            Uploaded Documents
+          </h2>
         </div>
         
         {loading ? (
-          <div className="p-8 text-center text-sm text-slate-400 animate-pulse">
+          <div className="p-8 text-center text-sm font-medium text-slate-500 animate-pulse">
             Loading document inventory...
           </div>
         ) : documents.length === 0 ? (
@@ -165,26 +211,29 @@ export default function KnowledgePage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-500">
-              <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-700">
+              <thead className="bg-slate-50/75 border-b border-slate-100 text-xs font-medium uppercase tracking-wide text-slate-400">
                 <tr>
-                  <th className="px-6 py-4">Title</th>
-                  <th className="px-6 py-4">Type</th>
-                  <th className="px-6 py-4">Uploaded At</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
+                  <th className="px-6 py-3.5 font-medium">Title</th>
+                  <th className="px-6 py-3.5 font-medium">Type</th>
+                  <th className="px-6 py-3.5 font-medium">Uploaded At</th>
+                  <th className="px-6 py-3.5 font-medium text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {documents.map((doc) => (
-                  <tr key={doc.id} className="hover:bg-slate-50/50">
-                    <td className="px-6 py-4 font-medium text-slate-900 truncate max-w-xs">
-                      {doc.title}
+                  <tr key={doc.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-slate-900 max-w-xs truncate">
+                      <div className="flex items-center gap-2.5">
+                        <DocumentIcon className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                        <span className="truncate">{doc.title}</span>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 uppercase">
                         {doc.fileType}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-slate-500">
                       {new Date(doc.createdAt).toLocaleDateString(undefined, {
                         year: "numeric",
                         month: "short",
@@ -194,7 +243,7 @@ export default function KnowledgePage() {
                     <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => handleDelete(doc.id, doc.title)}
-                        className="text-xs font-semibold text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100/50 px-3 py-1.5 rounded-md transition"
+                        className="inline-flex items-center text-sm font-medium text-rose-600 hover:text-rose-800 transition-colors focus:outline-none"
                       >
                         Delete
                       </button>
@@ -206,6 +255,7 @@ export default function KnowledgePage() {
           </div>
         )}
       </div>
+
     </div>
   );
 }

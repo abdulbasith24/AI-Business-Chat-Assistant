@@ -55,7 +55,7 @@ function SendIcon({ className }: { className?: string }) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Page                                                                */
+/*  Page Component                                                      */
 /* ------------------------------------------------------------------ */
 
 export default function PublicChatPage() {
@@ -166,7 +166,7 @@ export default function PublicChatPage() {
     handleMessageSubmit(input);
   };
 
-  // Derived only — not new state, computed fresh each render.
+  // Derived only — computed fresh each render.
   const hasUserSent = messages.some((m) => m.role === "user");
   const welcomeText = messages[0]?.content ?? "";
 
@@ -175,12 +175,12 @@ export default function PublicChatPage() {
 
   return (
     <div className="flex h-[100dvh] flex-col bg-white">
-      {/* Header */}
-      <header className="sticky top-0 z-10 w-full border-b border-slate-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
+      
+      {/* ── Header ──────────────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-10 w-full border-b border-slate-100 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
-            {/* Logo mark — swap for <img src="/logo.svg" .../> when a brand asset exists */}
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm">
               <SparkleIcon className="h-5 w-5" />
             </div>
             <div className="min-w-0">
@@ -203,11 +203,12 @@ export default function PublicChatPage() {
         </div>
       </header>
 
-      {/* Transcript / hero */}
+      {/* ── Transcript / Conversation Field ──────────────────────────────── */}
       <main role="log" aria-live="polite" aria-relevant="additions" className="flex-1 overflow-y-auto">
         <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-6 sm:px-6">
           {!hasUserSent ? (
-            /* ---------------- Empty state ---------------- */
+            
+            /* ── Empty state screen ── */
             <div className="flex min-h-[55dvh] flex-col items-center justify-center px-2 py-10 text-center">
               <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-sm">
                 <SparkleIcon className="h-6 w-6" />
@@ -216,12 +217,12 @@ export default function PublicChatPage() {
                 {welcomeText}
               </p>
 
-              <div className="mt-8 grid w-full max-w-lg grid-cols-1 gap-2 sm:grid-cols-2">
+              <div className="mt-8 grid w-full max-w-lg grid-cols-1 gap-2.5 sm:grid-cols-2">
                 {SUGGESTED_QUESTIONS.map((question) => (
                   <button
                     key={question}
                     onClick={() => handleMessageSubmit(question)}
-                    className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-medium text-slate-700 shadow-sm transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                    className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-medium text-slate-700 shadow-sm transition-all duration-150 hover:border-indigo-200 hover:bg-indigo-50/50 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 cursor-pointer"
                   >
                     {question}
                   </button>
@@ -229,7 +230,8 @@ export default function PublicChatPage() {
               </div>
             </div>
           ) : (
-            /* ---------------- Active transcript ---------------- */
+            
+            /* ── Active Transcript ── */
             messages.map((m, idx) => {
               const isLast = idx === messages.length - 1;
               const isStreaming = loading && isLast && m.role === "assistant" && m.content !== "";
@@ -237,11 +239,14 @@ export default function PublicChatPage() {
               if (m.role === "user") {
                 return (
                   <div key={m.id} className="flex items-start justify-end gap-3">
-                    <div className="flex max-w-[85%] flex-col items-end gap-1 sm:max-w-[75%]">
+                    <div className="flex max-w-[85%] flex-col items-end gap-1.5 sm:max-w-[75%]">
                       <div className="whitespace-pre-wrap rounded-2xl rounded-tr-sm bg-indigo-600 px-4 py-3 text-sm leading-relaxed text-white">
                         {m.content}
                       </div>
-                      <span className="px-1 text-[11px] text-slate-400">{formatTime(m.createdAt)}</span>
+                      {/* Promoted timestamp to 12px minimum (text-xs) */}
+                      <span className="px-1 text-xs text-slate-400">
+                        {formatTime(m.createdAt)}
+                      </span>
                     </div>
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-700 text-white">
                       <UserIcon className="h-4 w-4" />
@@ -255,8 +260,9 @@ export default function PublicChatPage() {
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white">
                     <SparkleIcon className="h-4 w-4" />
                   </div>
-                  <div className="flex max-w-[85%] flex-col gap-1 sm:max-w-[75%]">
-                    <div className="whitespace-pre-wrap rounded-2xl rounded-tl-sm border border-slate-100 bg-slate-100 px-4 py-3 text-sm leading-relaxed text-slate-800">
+                  <div className="flex max-w-[85%] flex-col gap-1.5 sm:max-w-[75%]">
+                    {/* Visual alignment: upgraded speech bubbles with borders & softer tones */}
+                    <div className="whitespace-pre-wrap rounded-2xl rounded-tl-sm border border-slate-100 bg-slate-50/80 px-4 py-3 text-sm leading-relaxed text-slate-700">
                       {m.content === "" ? (
                         <span className="flex items-center gap-1 py-1.5">
                           <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-indigo-400" />
@@ -273,7 +279,10 @@ export default function PublicChatPage() {
                       )}
                     </div>
                     {m.content !== "" && (
-                      <span className="px-1 text-[11px] text-slate-400">{formatTime(m.createdAt)}</span>
+                      /* Promoted timestamp to 12px minimum (text-xs) */
+                      <span className="px-1 text-xs text-slate-400">
+                        {formatTime(m.createdAt)}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -284,12 +293,12 @@ export default function PublicChatPage() {
         </div>
       </main>
 
-      {/* Composer */}
+      {/* ── Composer Form Footer ─────────────────────────────────────────── */}
       <footer className="border-t border-slate-200 bg-white px-4 py-4 sm:px-6">
         <div className="mx-auto max-w-3xl">
           <form
             onSubmit={handleFormSubmit}
-            className="flex items-center gap-2 rounded-3xl border border-slate-200 bg-white py-1.5 pl-4 pr-1.5 shadow-sm transition focus-within:border-indigo-400 focus-within:ring-1 focus-within:ring-indigo-400"
+            className="flex items-center gap-2 rounded-3xl border border-slate-200 bg-white py-1.5 pl-4 pr-1.5 shadow-sm transition-all duration-150 focus-within:border-indigo-400 focus-within:ring-1 focus-within:ring-indigo-400"
           >
             <input
               type="text"
@@ -304,12 +313,13 @@ export default function PublicChatPage() {
               type="submit"
               disabled={loading || !input.trim()}
               aria-label="Send message"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white transition hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white transition hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
             >
               <SendIcon className="h-4 w-4" />
             </button>
           </form>
-          <p className="mt-2 text-center text-[11px] text-slate-400">
+          {/* Promoted disclaimer to 12px minimum (text-xs) */}
+          <p className="mt-2.5 text-center text-xs text-slate-400 leading-normal">
             AI responses may be inaccurate. Verify important information.
           </p>
         </div>
