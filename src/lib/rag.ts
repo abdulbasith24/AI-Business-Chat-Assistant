@@ -1,5 +1,34 @@
 import { readFile } from "fs/promises";
 import { createRequire } from "module";
+
+// ------------------------------------------------------------------
+// VERCEL SERVERLESS POLYFILLS:
+// pdfjs-dist / pdf-parse expects browser-native graphics APIs. We
+// register global mocks before importing/requiring the library.
+// ------------------------------------------------------------------
+if (typeof global.DOMMatrix === "undefined") {
+  Object.defineProperty(global, "DOMMatrix", {
+    value: class DOMMatrix {},
+    writable: true,
+    configurable: true,
+  });
+}
+if (typeof global.Path2D === "undefined") {
+  Object.defineProperty(global, "Path2D", {
+    value: class Path2D {},
+    writable: true,
+    configurable: true,
+  });
+}
+if (typeof global.ImageData === "undefined") {
+  Object.defineProperty(global, "ImageData", {
+    value: class ImageData {},
+    writable: true,
+    configurable: true,
+  });
+}
+// ------------------------------------------------------------------
+
 import { ai } from "./gemini";
 import { db } from "./db"; 
 
